@@ -3,10 +3,9 @@ package akari
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/gorilla/websocket"
 	"log"
 	"time"
-
-	"github.com/gorilla/websocket"
 )
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -14,7 +13,7 @@ import (
 // The application runs readPump in a per-connection goroutine. The application
 // ensures that there is at most one reader on a connection by executing all
 // reads from this goroutine.
-func (c *Client) readPump(hub *Hub) {
+func (c *Client) readPump(hub *Hub, co Core) {
 	defer func() {
 		c.hub.unregister <- c
 		c.conn.Close()
@@ -30,27 +29,33 @@ func (c *Client) readPump(hub *Hub) {
 			}
 			break
 		}
-		msg := readMessage(string(message))
-		b, err := json.Marshal(msg.Data)
+		msg, err := readMessage(string(message))
 		if err != nil {
-			log.Println(err)
-			break
-		}
-		if msg.Destination[0] == "BROADCAST" {
-			message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-			c.hub.broadcast <- message
+			c.send <- []byte(err.Error())
 		} else {
-			r := checkDevice(hub, msg.Source, msg.Destination)
-			if r != nil {
-				c.send <- []byte(`{"Status":"error! ` + r.Error() + `"}`)
-			} else {
-				for i := 0; i < len(msg.Destination); i++ {
-					for client := range hub.clients {
-						if client.token == msg.Destination[i] {
-							client.send <- b
-						}
-					}
+			b, err := json.Marshal(msg.Data)
+			if err != nil {
+				log.Println(err)
+				break
+			}
+			switch msg.Destination[0] {
+			case "BROADCAST":
+				message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
+				c.hub.broadcast <- message
+			case "HANDLERFUNC":
+				if err := runHandlerFunc(co.Event[msg.Destination[1]]); err != nil {
+					c.send <- []byte(`{"Status":"error! ` + err.Error() + `"}`)
+				} //handle err
+			case "PUSHBULLET":
+				if len(msg.Destination) != 1 {
+					c.sendToWebsocketReadPump(hub, msg, b)
+				} else {
+					if err := makePushbulletPush(msg.Data); err != nil {
+						c.send <- []byte(PBPUSHNERR)
+					} //handle err
 				}
+			default:
+				c.sendToWebsocketReadPump(hub, msg, b)
 			}
 		}
 	}
@@ -97,6 +102,21 @@ func (c *Client) writePump() {
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.conn.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
 				return
+			}
+		}
+	}
+}
+
+func (c *Client) sendToWebsocketReadPump(hub *Hub, msg Message, b []byte) {
+	r := checkDevice(hub, msg.Source, msg.Destination)
+	if r != nil {
+		c.send <- []byte(`{"Status":"error! ` + r.Error() + `"}`)
+	} else {
+		for i := 0; i < len(msg.Destination); i++ {
+			for client := range hub.clients {
+				if client.token == msg.Destination[i] {
+					client.send <- b
+				}
 			}
 		}
 	}

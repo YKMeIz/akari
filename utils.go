@@ -3,7 +3,6 @@ package akari
 import (
 	"encoding/json"
 	"errors"
-	"log"
 	"strings"
 )
 
@@ -67,11 +66,18 @@ func (h *Hub) isOnline(token string) bool {
 }
 
 // readMessage reads a string of Message content, and returns in Message type.
-func readMessage(msg string) Message {
+func readMessage(msg string) (Message, error) {
 	var m Message
 	dec := json.NewDecoder(strings.NewReader(msg))
-	if err := dec.Decode(&m); err != nil {
-		log.Println(err)
+	if err := dec.Decode(&m); err == nil && messageCheck(m) {
+		return m, nil
 	}
-	return m
+	return m, errors.New(MESSAGEERR)
+}
+
+func messageCheck(m Message) bool {
+	if m.Source != "" && len(m.Destination) != 0 {
+		return true
+	}
+	return false
 }

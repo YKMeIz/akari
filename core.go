@@ -2,16 +2,16 @@ package akari
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
+	"net/http"
 )
 
-type Core struct {
-	Domain                string
-	Port                  string
-	CertChain             string
-	CertKey               string
-	MessageRelativePath   string
-	WebsocketRelativePath string
-	DatabasePath          string
+func runHandlerFunc(f HandlerFunc) error {
+	return f()
+}
+
+func (c *Core) InitEventHandler() {
+	c.Event = make(map[string]HandlerFunc)
 }
 
 func (c Core) Run() {
@@ -26,11 +26,11 @@ func (c Core) serve() {
 	r := gin.Default()
 	hub := newHub()
 	go hub.run()
-	r.GET(c.WebsocketRelativePath, func(c *gin.Context) {
-		handleWebsocket(hub, c.Writer, c.Request)
+	r.GET(c.WebsocketRelativePath, func(g *gin.Context) {
+		c.handleWebsocket(hub, g.Writer, g.Request)
 	})
 	r.POST(c.MessageRelativePath, func(g *gin.Context) {
-		handleMsg(hub, g)
+		c.handleApi(hub, g)
 	})
 	if c.CertChain == "" || c.CertKey == "" {
 		if c.Port == "" {
@@ -57,4 +57,23 @@ func (c Core) checkNecessaryVariable() {
 	if c.WebsocketRelativePath == "" {
 		panic("err: relative path of websocket is missing.")
 	}
+}
+
+// handleWebsocket handles websocket requests from the peer.
+func (c Core) handleWebsocket(hub *Hub, w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	go c.tokenRegister(hub, w, r, conn)
+}
+
+func (c Core) handleApi(hub *Hub, g *gin.Context) {
+	if err := c.sendToWebsocket(g, hub); err != nil {
+		g.JSON(http.StatusNotImplemented, gin.H{"Status": "error! " + err.Error()})
+		g.AbortWithStatus(http.StatusNotImplemented)
+		return
+	}
+	g.JSON(http.StatusOK, gin.H{"Status": "ok!"})
 }

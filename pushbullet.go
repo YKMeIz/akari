@@ -6,13 +6,6 @@ import (
 	"net/http"
 )
 
-type PushbulletPush struct {
-	pushType    string
-	title       string
-	body        string
-	accessToken string
-}
-
 // Push sends a POST request to Pushbullet server in order to make a Pushbullet push notification.
 func (p *PushbulletPush) Push() (err error) {
 	jsonStr := `{"body":"` + p.body + `","title":"` + p.title + `","type":"` + p.pushType + `"}`

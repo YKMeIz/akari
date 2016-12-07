@@ -2,13 +2,12 @@ package akari
 
 import (
 	"encoding/json"
+	"github.com/gorilla/websocket"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/gorilla/websocket"
 )
 
 // tokenRegister checks connected client(device)'s identification.
@@ -21,7 +20,7 @@ import (
 //
 // Identification declaration format:
 // { "Name": "DEVICE NAME", "Token": "DEVICE TOKEN"}
-func tokenRegister(hub *Hub, w http.ResponseWriter, r *http.Request, conn *websocket.Conn) {
+func (c Core) tokenRegister(hub *Hub, w http.ResponseWriter, r *http.Request, conn *websocket.Conn) {
 	token := make(chan AuthMessage)
 	defer close(token)
 	go func() {
@@ -36,19 +35,19 @@ func tokenRegister(hub *Hub, w http.ResponseWriter, r *http.Request, conn *webso
 	case res := <-token:
 		if ifRepeat(hub, res) {
 			if authenticate(res.Name, res.Token) {
-				go response(conn, `{"Status": "ok!"}`)
+				go response(conn, REGISTEROK)
 				client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), name: res.Name, token: res.Token}
 				client.hub.register <- client
 				go client.writePump()
-				go client.readPump(hub)
+				go client.readPump(hub, c)
 			} else {
-				go response(conn, `{"Status": "error! wrong user name or token."}`)
+				go response(conn, REGISTERER)
 			}
 		} else {
-			go response(conn, `{"Status": "error! your device is already online."}`)
+			go response(conn, REGISTEROL)
 		}
 	case <-time.After(time.Second * 30):
-		go response(conn, `{"Status": "error! id authentication is required."}`)
+		go response(conn, REGISTERTO)
 	}
 }
 
@@ -98,7 +97,7 @@ func response(conn *websocket.Conn, reason string) {
 	if err := conn.WriteMessage(websocket.TextMessage, b); err != nil {
 		log.Println(err)
 	}
-	if reason != `{"Status": "ok!"}` {
+	if reason != REGISTEROK {
 		conn.Close()
 	}
 }
