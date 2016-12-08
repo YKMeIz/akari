@@ -93,7 +93,8 @@ Database Path:        /tmp/data.db
 
 ```
 
-Output above is default setting. Akari based server could detect your IP address and listen on port 8080. In order to run the server, you only need to set database path.
+Output above is default setting. Akari based server could detect your IP address and listen on port 8080.
+> Note: In order to run the server, you need to set database path at least.
 
 #### Trigger your custom function
 
@@ -186,10 +187,19 @@ In order to run a custom function set in Event map, `Destination` need to be set
 For example, if your custom function (`PRINT`) is:
 
 ```go
+func main() {
+	// (Rest of main)
+
+	// Custom function
+	// "PRINT" is the Event name
+	c.Event["PRINT"] = eventPrint
+
+	// (Rest of main)
+}
+
 // Custom function
-// "PRINT" is the Event name
-c.Event["PRINT"] = func() error {
-	fmt.Println("Run a custom function.")
+func eventPrint(m *akari.Message) error {
+	fmt.Println(m.Data["customFunc"])
 	return nil
 }
 ```
