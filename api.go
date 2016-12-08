@@ -1,3 +1,21 @@
+// Copyright © 2016 nrechn <nrechn@gmail.com>
+//
+// This file is part of akari.
+//
+// akari is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// akari is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with akari. If not, see <http://www.gnu.org/licenses/>.
+//
+
 package akari
 
 import (
@@ -8,10 +26,6 @@ import (
 	"log"
 )
 
-// PushNoti handles notification pushing via websocket.
-//
-// If target device is offline, PushNoti will send notificatrion via Pushbullet
-// as long as Pushbullet's token is set.
 func (c Core) sendToWebsocket(g *gin.Context, h *hub) error {
 	body, err := ioutil.ReadAll(g.Request.Body)
 	if err != nil {
@@ -50,10 +64,10 @@ func (c Core) sendToWebsocket(g *gin.Context, h *hub) error {
 
 func makePushbulletPush(data map[string]string) error {
 	p := PushbulletPush{
-		pushType:    data["Type"],
-		title:       data["Title"],
-		body:        data["Body"],
-		accessToken: data["AccessToken"]}
+		PushType:    data["Type"],
+		Title:       data["Title"],
+		Body:        data["Body"],
+		AccessToken: data["AccessToken"]}
 	if err := p.Push(); err != nil {
 		return errors.New(PBPUSHNERR)
 	}

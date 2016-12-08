@@ -1,3 +1,21 @@
+// Copyright © 2016 nrechn <nrechn@gmail.com>
+//
+// This file is part of akari.
+//
+// akari is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// akari is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with akari. If not, see <http://www.gnu.org/licenses/>.
+//
+
 package akari
 
 import (
@@ -13,6 +31,13 @@ func (m *Message) runHandlerFunc(f HandlerFunc) error {
 	return f(m)
 }
 
+// New returns a new blank Core instance.
+// By default the configuration is:
+// Domain: your host system's IP address (Not localhost).
+// Port: "8080".
+// MessageRelativePath:   "/nc".
+// WebsocketRelativePath: "/ws".
+// Note: You need set DatabasePath before Run().
 func New() *Core {
 	ip, err := IPAddress()
 	if err != nil {
@@ -27,6 +52,9 @@ func New() *Core {
 	return c
 }
 
+// Run a Core instance. It starts listening and serving websocket & HTTP requests.
+// If "CertChain" and "CertKey" are set, it will automatically start
+// listening and serving secure websocket & HTTPS requests.
 func (c Core) Run() {
 	c.isDatabasePath()
 	c.OpenDatabase()
@@ -100,6 +128,10 @@ func (c Core) handleApi(h *hub, g *gin.Context) {
 	g.JSON(http.StatusOK, gin.H{"Status": "ok!"})
 }
 
+// IPAddress returns host system's IP address.
+// It does not return loopback address (localhost).
+// If there is not any public IP address, it will return
+// local area network address.
 func IPAddress() (string, error) {
 	ifaces, err := net.Interfaces()
 	if err != nil {
