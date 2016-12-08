@@ -9,8 +9,8 @@ import (
 	"net/http"
 )
 
-func runHandlerFunc(f HandlerFunc) error {
-	return f()
+func (m *Message) runHandlerFunc(f HandlerFunc) error {
+	return f(m)
 }
 
 func New() *Core {

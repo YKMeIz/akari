@@ -28,10 +28,10 @@ import (
 )
 
 func main() {
-	// Create a database file.
+	// Create a database file
 	akari.InitDatabase("/tmp/data.db")
 
-	// Create a new user.
+	// Create a new user
 	u := akari.User{Name: "Akari"}
 	name, token, err := u.RegisterUser()
 	if err != nil {
@@ -67,13 +67,16 @@ func main() {
 	c.DatabasePath = "/tmp/data.db"
 
 	// Custom function
-	c.Event["PRINT"] = func() error {
-		fmt.Println("Run a custom function.")
-		return nil
-	}
+	c.Event["PRINT"] = eventPrint
 
-	// Listen and serve on localhost:8080
+	// Listen and serve on IPAddress:8080
 	c.Run()
+}
+
+// Custom function
+func eventPrint(m *akari.Message) error {
+	fmt.Println(m.Data["customFunc"])
+	return nil
 }
 ```
 
@@ -97,11 +100,26 @@ Output above is default setting. Akari based server could detect your IP address
 ```sh
 curl -H "Content-Type: application/json" \
 -X POST \
--d '{"Source": "f6283b29169cf8c1e84bf23cf86772fb", "Destination": ["HANDLERFUNC", "PRINT"], "Data": {}}' \
+-d '{"Source": "f6283b29169cf8c1e84bf23cf86772fb", "Destination": ["HANDLERFUNC", "PRINT"], "Data": {"customFunc": "This is custom function content."}}' \
 http://10.0.0.192:8080/nc
 ```
 
-If you get `{"Status":"ok!"}`, you will see `Run a custom function.` is printed in terminal.
+If you get `{"Status":"ok!"}`, you will see `This is custom function content.` is printed in terminal:
+
+```sh
+$ go run akariServer.go
+
+Server listens on:    10.0.0.192:8080
+TLS/SSL is            Disabled
+POST API Address:     10.0.0.192:8080/nc
+Websocket Address:    10.0.0.192:8080/ws
+Database Path:        /tmp/data.db
+
+This is custom function content.
+[GIN] 2016/12/08 - 13:22:50 | 200 |     107.267µs | 10.0.0.192 |   POST    /nc
+
+```
+> [gin-gonic/gin](https://github.com/gin-gonic/gin) is currently used for handling HTTP requests because Akari's own HTTP handler is still under developing.
 
 ## How it works
 

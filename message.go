@@ -31,7 +31,7 @@ func (c *client) readPump(h *hub, co Core) {
 		}
 		msg, err := ReadMessage(string(message))
 		if err != nil {
-			c.send <- []byte(err.Error())
+			c.send <- []byte(formatErrInfo(err.Error()))
 		} else {
 			b, err := json.Marshal(msg.Data)
 			if err != nil {
@@ -43,7 +43,7 @@ func (c *client) readPump(h *hub, co Core) {
 				message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
 				c.hub.broadcast <- message
 			case "HANDLERFUNC":
-				if err := runHandlerFunc(co.Event[msg.Destination[1]]); err != nil {
+				if err := msg.runHandlerFunc(co.Event[msg.Destination[1]]); err != nil {
 					c.send <- []byte(`{"Status":"error! ` + err.Error() + `"}`)
 				} //handle err
 			case "PUSHBULLET":
@@ -51,7 +51,7 @@ func (c *client) readPump(h *hub, co Core) {
 					c.sendToWebsocketReadPump(h, msg, b)
 				} else {
 					if err := makePushbulletPush(msg.Data); err != nil {
-						c.send <- []byte(PBPUSHNERR)
+						c.send <- []byte(formatErrInfo(PBPUSHNERR))
 					} //handle err
 				}
 			default:

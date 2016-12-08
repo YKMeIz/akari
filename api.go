@@ -33,7 +33,7 @@ func (c Core) sendToWebsocket(g *gin.Context, h *hub) error {
 		h.broadcast <- b
 		return nil
 	case "HANDLERFUNC":
-		return runHandlerFunc(c.Event[msg.Destination[1]]) //handle err
+		return msg.runHandlerFunc(c.Event[msg.Destination[1]]) //handle err
 	case "PUSHBULLET":
 		if len(msg.Destination) != 1 {
 			if err := sendToWebsocketDefault(h, msg, b); err != nil {
@@ -55,7 +55,7 @@ func makePushbulletPush(data map[string]string) error {
 		body:        data["Body"],
 		accessToken: data["AccessToken"]}
 	if err := p.Push(); err != nil {
-		return errors.New("Fail to send Pushbullet notification.")
+		return errors.New(PBPUSHNERR)
 	}
 	return nil
 }

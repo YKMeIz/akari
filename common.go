@@ -13,7 +13,7 @@ type Core struct {
 	Event                 map[string]HandlerFunc
 }
 
-type HandlerFunc func() error
+type HandlerFunc func(*Message) error
 
 type Message struct {
 	// Message sender's token.
@@ -35,14 +35,18 @@ type PushbulletPush struct {
 
 const (
 	REGISTEROK string = `{"Status": "ok!"}`
-	REGISTERER string = `{"Status": "error! Wrong user name or token."}`
-	REGISTEROL string = `{"Status": "error! Your device is already online."}`
-	REGISTERTO string = `{"Status": "error! Id authentication is required."}`
-	PBPUSHNERR string = `{"Status": "error! Fail to send Pushbullet notification."}`
-	HANDLERFER string = `{"Status": "error! An error occured on running custom handler function."}`
-	MESSAGEERR string = `{"Status": "error! Missing source or destination."}`
+	REGISTERER string = `Wrong user name or token.`
+	REGISTEROL string = `Your device is already online.`
+	REGISTERTO string = `Id authentication is required.`
+	PBPUSHNERR string = `Fail to send Pushbullet notification.`
+	HANDLERFER string = `An error occured on running custom handler function.`
+	MESSAGEERR string = `Missing source or destination.`
 )
 
 var (
 	DatabasePath string
 )
+
+func formatErrInfo(errInfo string) string {
+	return `{"Status": "error! ` + errInfo + `"}`
+}

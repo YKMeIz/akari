@@ -42,13 +42,13 @@ func (c Core) tokenRegister(h *hub, w http.ResponseWriter, r *http.Request, conn
 				go client.writePump()
 				go client.readPump(h, c)
 			} else {
-				go response(conn, REGISTERER)
+				go response(conn, formatErrInfo(REGISTERER))
 			}
 		} else {
-			go response(conn, REGISTEROL)
+			go response(conn, formatErrInfo(REGISTEROL))
 		}
 	case <-time.After(time.Second * 30):
-		go response(conn, REGISTERTO)
+		go response(conn, formatErrInfo(REGISTERTO))
 	}
 }
 
