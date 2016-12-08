@@ -26,11 +26,6 @@ type Message struct {
 	Data map[string]string
 }
 
-// AuthMessage is utilized to verify device's identity.
-type AuthMessage struct {
-	Name, Token string
-}
-
 type PushbulletPush struct {
 	pushType    string
 	title       string
@@ -44,6 +39,10 @@ const (
 	REGISTEROL string = `{"Status": "error! Your device is already online."}`
 	REGISTERTO string = `{"Status": "error! Id authentication is required."}`
 	PBPUSHNERR string = `{"Status": "error! Fail to send Pushbullet notification."}`
-	HANDLERFER string = `{"Status":"error! An error occured on running custom handler function."}`
-	MESSAGEERR string = `{"Status":"error! Missing source or destination."}`
+	HANDLERFER string = `{"Status": "error! An error occured on running custom handler function."}`
+	MESSAGEERR string = `{"Status": "error! Missing source or destination."}`
+)
+
+var (
+	DatabasePath string
 )

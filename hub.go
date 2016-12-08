@@ -30,8 +30,8 @@ var upgrader = websocket.Upgrader{
 }
 
 // Client is a middleman between the websocket connection and the hub.
-type Client struct {
-	hub *Hub
+type client struct {
+	hub *hub
 
 	// The websocket connection.
 	conn *websocket.Conn
@@ -39,39 +39,36 @@ type Client struct {
 	// Buffered channel of outbound messages.
 	send chan []byte
 
-	// Device name
-	name string
-
-	// Device token
-	token string
+	// User information
+	user User
 }
 
 // Hub maintains the set of active clients and broadcasts messages to the
 // clients.
-type Hub struct {
+type hub struct {
 	// Registered clients.
-	clients map[*Client]bool
+	clients map[*client]bool
 
 	// Inbound messages from the clients for broadcast.
 	broadcast chan []byte
 
 	// Register requests from the clients.
-	register chan *Client
+	register chan *client
 
 	// Unregister requests from clients.
-	unregister chan *Client
+	unregister chan *client
 }
 
-func newHub() *Hub {
-	return &Hub{
+func newHub() *hub {
+	return &hub{
 		broadcast:  make(chan []byte),
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
-		clients:    make(map[*Client]bool),
+		register:   make(chan *client),
+		unregister: make(chan *client),
+		clients:    make(map[*client]bool),
 	}
 }
 
-func (h *Hub) run() {
+func (h *hub) run() {
 	for {
 		select {
 		case client := <-h.register:

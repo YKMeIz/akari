@@ -13,7 +13,7 @@ import (
 // The application runs readPump in a per-connection goroutine. The application
 // ensures that there is at most one reader on a connection by executing all
 // reads from this goroutine.
-func (c *Client) readPump(hub *Hub, co Core) {
+func (c *client) readPump(h *hub, co Core) {
 	defer func() {
 		c.hub.unregister <- c
 		c.conn.Close()
@@ -29,7 +29,7 @@ func (c *Client) readPump(hub *Hub, co Core) {
 			}
 			break
 		}
-		msg, err := readMessage(string(message))
+		msg, err := ReadMessage(string(message))
 		if err != nil {
 			c.send <- []byte(err.Error())
 		} else {
@@ -48,14 +48,14 @@ func (c *Client) readPump(hub *Hub, co Core) {
 				} //handle err
 			case "PUSHBULLET":
 				if len(msg.Destination) != 1 {
-					c.sendToWebsocketReadPump(hub, msg, b)
+					c.sendToWebsocketReadPump(h, msg, b)
 				} else {
 					if err := makePushbulletPush(msg.Data); err != nil {
 						c.send <- []byte(PBPUSHNERR)
 					} //handle err
 				}
 			default:
-				c.sendToWebsocketReadPump(hub, msg, b)
+				c.sendToWebsocketReadPump(h, msg, b)
 			}
 		}
 	}
@@ -66,7 +66,7 @@ func (c *Client) readPump(hub *Hub, co Core) {
 // A goroutine running writePump is started for each connection. The
 // application ensures that there is at most one writer to a connection by
 // executing all writes from this goroutine.
-func (c *Client) writePump() {
+func (c *client) writePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
@@ -107,14 +107,14 @@ func (c *Client) writePump() {
 	}
 }
 
-func (c *Client) sendToWebsocketReadPump(hub *Hub, msg Message, b []byte) {
-	r := checkDevice(hub, msg.Source, msg.Destination)
+func (c *client) sendToWebsocketReadPump(h *hub, msg Message, b []byte) {
+	r := checkDevice(h, msg.Source, msg.Destination)
 	if r != nil {
 		c.send <- []byte(`{"Status":"error! ` + r.Error() + `"}`)
 	} else {
 		for i := 0; i < len(msg.Destination); i++ {
-			for client := range hub.clients {
-				if client.token == msg.Destination[i] {
+			for client := range h.clients {
+				if client.user.Token == msg.Destination[i] {
 					client.send <- b
 				}
 			}

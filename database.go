@@ -1,74 +1,88 @@
 package akari
 
 import (
+	"errors"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
-type Device struct {
-	ID    int
+type User struct {
 	Name  string
 	Token string
 }
 
-var db *gorm.DB
+var (
+	db                 *gorm.DB
+	databaseConnection bool
+)
 
 // initialize sqlite3 database
-func initDatabase(databasePath string) {
+func InitDatabase(databasePath string) {
 	var err error
 	db, err = gorm.Open("sqlite3", databasePath)
 	if err != nil {
 		panic("err: failed to connect database.")
 	}
-	// db.CreateTable(&Device{})
-	// new := Device{Name: "test", Token: "c8424762ae5148954e2e640c389c31c5"}
-	// db.Save(&new)
+	db.CreateTable(&User{})
+	databaseConnection = true
 }
 
-// IsName checks if given name appears in database.
-//
-// It returns true if name appears in the database; returns false
-// if name does not appear in the database
-func isName(name string) bool {
-	d := Device{Name: name}
-	db.Where(&d).First(&d)
-	if d.ID != 0 {
-		return true
+func (c Core) OpenDatabase() {
+	var err error
+	db, err = gorm.Open("sqlite3", c.DatabasePath)
+	if err != nil {
+		panic("err: failed to connect database.")
+	}
+	databaseConnection = true
+}
+
+func (u User) IsUser() bool {
+	checkDatabaseConnection()
+	if u.Name != "" && u.Token != "" {
+		r := User{Name: u.Name}
+		db.Where(&r).First(&r)
+		if u.Token == r.Token {
+			return true
+		}
+		return false
+	}
+	if u.Name != "" {
+		r := User{Name: u.Name}
+		db.Where(&r).First(&r)
+		if r.Token != "" {
+			return true
+		}
+		return false
+	}
+	if u.Token != "" {
+		r := User{Token: u.Token}
+		db.Where(&r).First(&r)
+		if r.Name != "" {
+			return true
+		}
+		return false
 	}
 	return false
 }
 
-// IsName checks if given token appears in database.
-//
-// It returns true if token appears in the database; returns false
-// if token does not appear in the database
-func isToken(token string) bool {
-	d := Device{Token: token}
-	db.Where(&d).First(&d)
-	if d.ID != 0 {
-		return true
+func (u *User) UserCompletion() error {
+	checkDatabaseConnection()
+	if u.Name != "" && u.Token != "" {
+		return errors.New("err: Given user information is already completed.")
 	}
-	return false
+	db.Where(&u).First(&u)
+	if u.Name != "" && u.Token != "" {
+		return nil
+	}
+	return errors.New("err: User is not found.")
 }
 
-// CompareToken compares given token with the token stored in database.
-//
-// It returns true if both tokens are same; returns false
-// if tokens are different.
-func compareToken(name, token string) bool {
-	d := Device{Name: name}
-	db.Where(&d).First(&d)
-	if d.ID != 0 && token == d.Token {
-		return true
-	}
-	return false
+func IsDatabaseConnected() bool {
+	return databaseConnection
 }
 
-func getName(token string) string {
-	d := Device{Token: token}
-	db.Where(&d).First(&d)
-	if d.ID != 0 {
-		return d.Name
+func checkDatabaseConnection() {
+	if !databaseConnection {
+		panic("Database is not initialized or opened.")
 	}
-	return ""
 }

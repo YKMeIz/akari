@@ -9,10 +9,10 @@ import (
 type check struct {
 	source      string
 	destination []string
-	hub         *Hub
+	hub         *hub
 }
 
-func checkDevice(h *Hub, s string, d []string) error {
+func checkDevice(h *hub, s string, d []string) error {
 	c := check{source: s, destination: d, hub: h}
 	if err := c.isTokenAppear(); err != nil {
 		return err
@@ -25,11 +25,13 @@ func checkDevice(h *Hub, s string, d []string) error {
 
 func (c check) isTokenAppear() error {
 	var destinationToken string
-	if !isToken(c.source) {
+	u := User{Token: c.source}
+	if !u.IsUser() {
 		return errors.New("Source does not appear.")
 	}
 	for i := 0; i < len(c.destination); i++ {
-		if !isToken(c.destination[i]) {
+		u := User{Token: c.destination[i]}
+		if !u.IsUser() {
 			destinationToken = destinationToken + c.destination[i] + " "
 		}
 	}
@@ -41,12 +43,16 @@ func (c check) isTokenAppear() error {
 
 func (c check) isTokenOnline() error {
 	var destinationName string
-	if !c.hub.isOnline(c.source) {
-		return errors.New("Source " + getName(c.source) + " is offline.")
+	if !c.isOnline(c.source) {
+		u := &User{Token: c.source}
+		u.UserCompletion()
+		return errors.New("Source " + u.Name + " is offline.")
 	}
 	for i := 0; i < len(c.destination); i++ {
-		if !c.hub.isOnline(c.destination[i]) {
-			destinationName = destinationName + getName(c.destination[i]) + " "
+		if !c.isOnline(c.destination[i]) {
+			u := &User{Token: c.destination[i]}
+			u.UserCompletion()
+			destinationName = destinationName + u.Name + " "
 		}
 	}
 	if destinationName != "" {
@@ -56,9 +62,9 @@ func (c check) isTokenOnline() error {
 }
 
 // isOnline checks if given destination is online.
-func (h *Hub) isOnline(token string) bool {
-	for client := range h.clients {
-		if client.token == token {
+func (c check) isOnline(token string) bool {
+	for client := range c.hub.clients {
+		if client.user.Token == token {
 			return true
 		}
 	}
@@ -66,7 +72,7 @@ func (h *Hub) isOnline(token string) bool {
 }
 
 // readMessage reads a string of Message content, and returns in Message type.
-func readMessage(msg string) (Message, error) {
+func ReadMessage(msg string) (Message, error) {
 	var m Message
 	dec := json.NewDecoder(strings.NewReader(msg))
 	if err := dec.Decode(&m); err == nil && messageCheck(m) {
