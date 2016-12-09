@@ -38,7 +38,7 @@ var (
 	databaseConnection bool
 )
 
-// Initialize a nre SQLite database file.
+// InitDatabase Initializes a new SQLite database file.
 // It is only utilized for first time initialization.
 // If you have already initialized a database file,
 // please run OpenDatabase() instead.

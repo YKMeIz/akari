@@ -1,10 +1,13 @@
 <img align="right" src="https://raw.githubusercontent.com/nrechn/akari/master/logo.png">
 
 # Akari Message Framework
+[![License](https://img.shields.io/badge/license-GPL--3.0-red.svg?style=flat-square)](https://github.com/nrechn/akari/blob/master/LICENSE)
+[![Go Walker](https://img.shields.io/badge/Go%20Walker-documentation-green.svg?style=flat-square)](http://gowalker.org/github.com/nrechn/akari)
+[![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](http://godoc.org/github.com/nrechn/akari)
+[![Go Report Card](https://goreportcard.com/badge/github.com/nrechn/akari?style=flat-square)](https://goreportcard.com/report/github.com/nrechn/akari)
+
 
 Akari is a message framework written in Go (Golang). It follows KISS (Keep it simple, stupid) design principle, and is designed for IoT communication and notification push from *nix side to any device.
-
-<br>
 
 ## Quickstart
 
@@ -222,7 +225,7 @@ Your message should look like this:
 
 ### Pushbullet Support
 
-Akari message framework supports sending notification via Pushbullet. Set `"Destination":["HPUSHBULLET"]` to send a message to Pushbullet service.
+Akari message framework supports sending notification via Pushbullet. Set `"Destination":["PUSHBULLET"]` to send a message to Pushbullet service.
 > Currently, only support sending "push" notification in type "note".
 
 ```json

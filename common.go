@@ -18,8 +18,6 @@
 
 package akari
 
-import ()
-
 // Core is the framework's instance, it contains all configuration settings.
 // Create an instance of Core, by using New().
 type Core struct {
@@ -49,6 +47,7 @@ type Core struct {
 	// Examples could be found on https://github.com/nrechn/akari .
 }
 
+// HandlerFunc is the type of custom function.
 type HandlerFunc func(*Message) error
 
 // Message defines "Unified Message Format".
@@ -87,12 +86,8 @@ const (
 	REGISTEROL string = `Your device is already online.`
 	REGISTERTO string = `Id authentication is required.`
 	PBPUSHNERR string = `Fail to send Pushbullet notification.`
-	HANDLERFER string = `An error occured on running custom handler function.`
+	HANDLERFER string = `An error occurred on running custom handler function.`
 	MESSAGEERR string = `Missing source or destination.`
-)
-
-var (
-	DatabasePath string
 )
 
 func formatErrInfo(errInfo string) string {
