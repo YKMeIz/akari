@@ -1,10 +1,10 @@
-<img align="right" src="https://raw.githubusercontent.com/nrechn/akari/master/logo.png">
+<img align="right" src="https://raw.githubusercontent.com/YKMeIz/akari/main/logo.png">
 
 # Akari Message Framework
-[![License](https://img.shields.io/badge/license-GPL--3.0-red.svg?style=flat-square)](https://github.com/nrechn/akari/blob/master/LICENSE)
-[![Go Walker](https://img.shields.io/badge/Go%20Walker-documentation-green.svg?style=flat-square)](http://gowalker.org/github.com/nrechn/akari)
-[![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](http://godoc.org/github.com/nrechn/akari)
-[![Go Report Card](https://goreportcard.com/badge/github.com/nrechn/akari?style=flat-square)](https://goreportcard.com/report/github.com/nrechn/akari)
+[![License](https://img.shields.io/badge/license-GPL--3.0-red.svg?style=flat-square)](https://github.com/YKMeIz/akari/blob/main/LICENSE)
+[![Go Walker](https://img.shields.io/badge/Go%20Walker-documentation-green.svg?style=flat-square)](http://gowalker.org/github.com/YKMeIz/akari)
+[![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](http://godoc.org/github.com/YKMeIz/akari)
+[![Go Report Card](https://goreportcard.com/badge/github.com/YKMeIz/akari?style=flat-square)](https://goreportcard.com/report/github.com/YKMeIz/akari)
 
 
 Akari is a message framework written in Go (Golang). It follows KISS (Keep it simple, stupid) design principle, and is designed for IoT communication and notification push from *nix side to any device.
@@ -14,7 +14,7 @@ Akari is a message framework written in Go (Golang). It follows KISS (Keep it si
 #### Download and install source
 
 ```sh
-$ go get github.com/nrechn/akari
+$ go get github.com/YKMeIz/akari
 ```
 
 #### Create a user
@@ -27,7 +27,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/nrechn/akari"
+	"github.com/YKMeIz/akari"
 )
 
 func main() {
@@ -62,7 +62,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/nrechn/akari"
+	"github.com/YKMeIz/akari"
 )
 
 func main() {
