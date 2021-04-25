@@ -60,7 +60,6 @@ func (c Core) Run() {
 	c.OpenDatabase()
 	c.printInfo()
 	c.serve()
-	defer db.Close()
 }
 
 func (c Core) isDatabasePath() {

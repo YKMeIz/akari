@@ -20,8 +20,8 @@ package akari
 
 import (
 	"errors"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 // User defines user information.
@@ -44,18 +44,18 @@ var (
 // please run OpenDatabase() instead.
 func InitDatabase(databasePath string) {
 	var err error
-	db, err = gorm.Open("sqlite3", databasePath)
+	db, err = gorm.Open(sqlite.Open(databasePath), &gorm.Config{})
 	if err != nil {
 		panic("err: failed to connect database.")
 	}
-	db.CreateTable(&User{})
+	db.AutoMigrate(&User{})
 	databaseConnection = true
 }
 
 // OpenDatabase opens an exist SQLite database file.
 func (c Core) OpenDatabase() {
 	var err error
-	db, err = gorm.Open("sqlite3", c.DatabasePath)
+	db, err = gorm.Open(sqlite.Open(c.DatabasePath), &gorm.Config{})
 	if err != nil {
 		panic("err: failed to connect database.")
 	}
